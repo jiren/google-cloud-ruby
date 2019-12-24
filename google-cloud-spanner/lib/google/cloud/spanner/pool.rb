@@ -161,6 +161,10 @@ module Google
           shutdown
           init
 
+          @mutex.synchronize do
+            @closed = false
+          end
+
           true
         end
 

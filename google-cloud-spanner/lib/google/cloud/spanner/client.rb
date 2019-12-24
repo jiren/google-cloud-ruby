@@ -50,6 +50,9 @@ module Google
       #   end
       #
       class Client
+        # @return [Pool] Session pool.
+        attr_reader :pool
+
         ##
         # @private Creates a new Spanner Client instance.
         def initialize project, instance_id, database_id, session_labels: nil,
@@ -1272,6 +1275,14 @@ module Google
         #
         def close
           @pool.close
+        end
+
+        ##
+        # Reset client connection. Closes session pools and created
+        # new sessions
+        #
+        def reset
+          @pool.reset
         end
 
         ##
