@@ -1286,6 +1286,18 @@ module Google
         end
 
         ##
+        # Check client connection is active.
+        #
+        def active?
+          ensure_service!
+
+          execute_query "SELECT 1"
+          true
+        rescue Google::Cloud::NotFoundError
+          false
+        end
+
+        ##
         # @private
         # Creates a new session object every time.
         def create_new_session
