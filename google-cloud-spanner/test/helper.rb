@@ -190,6 +190,7 @@ class MockSpanner < Minitest::Spec
         request[:resume_token] == resume_token &&
         request[:partition_token] == partition_token &&
         request[:seqno] == seqno &&
+        # request[:request_options] == request_options &&
         gapic_options == options &&
         request[:query_options] == query_options
     end
