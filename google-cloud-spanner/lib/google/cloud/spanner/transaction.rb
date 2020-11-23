@@ -77,6 +77,9 @@ module Google
         # @private The Session object.
         attr_accessor :session
 
+        # @private Transaction tag for statistics collection.
+        attr_accessor :transaction_tag
+
         def initialize
           @commit = Commit.new
           @seqno = 0
@@ -155,6 +158,10 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
+        # @param [String] tag A per-request tag which can be applied to queries
+        #   or reads, used for statistics collection. Tag must be a valid
+        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
+        #   characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -312,15 +319,17 @@ module Google
         #   end
         #
         def execute_query sql, params: nil, types: nil, query_options: nil,
-                          call_options: nil
+                          tag: nil, call_options: nil
           ensure_session!
 
           @seqno += 1
 
           params, types = Convert.to_input_params_and_types params, types
+          request_options = build_request_options request_tag: tag
           session.execute_query sql, params: params, types: types,
                                      transaction: tx_selector, seqno: @seqno,
                                      query_options: query_options,
+                                     request_options: request_options,
                                      call_options: call_options
         end
         alias execute execute_query
@@ -391,6 +400,10 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
+        # @param [String] tag A per-request tag which can be applied to queries
+        #   or reads, used for statistics collection. Tag must be a valid
+        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
+        #   characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -468,9 +481,11 @@ module Google
         #   end
         #
         def execute_update sql, params: nil, types: nil, query_options: nil,
-                           call_options: nil
+                           tag: nil, call_options: nil
+          request_options = build_request_options request_tag: tag
           results = execute_query sql, params: params, types: types,
                                   query_options: query_options,
+                                  request_options: request_options,
                                   call_options: call_options
           # Stream all PartialResultSet to get ResultSetStats
           results.rows.to_a
@@ -485,6 +500,10 @@ module Google
         ##
         # Executes DML statements in a batch.
         #
+        # @param [String] tag A per-request tag which can be applied to queries
+        #   or reads, used for statistics collection. Tag must be a valid
+        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
+        #   characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -554,10 +573,12 @@ module Google
         #     end
         #   end
         #
-        def batch_update call_options: nil, &block
+        def batch_update tag: nil, call_options: nil, &block
           ensure_session!
           @seqno += 1
+          request_options = build_request_options request_tag: tag
           session.batch_update tx_selector, @seqno,
+                               request_options: request_options,
                                call_options: call_options, &block
         end
 
@@ -577,6 +598,10 @@ module Google
         #   Optional.
         # @param [Integer] limit If greater than zero, no more than this number
         #   of rows will be returned. The default is no limit.
+        # @param [String] tag A per-request tag which can be applied to queries
+        #   or reads, used for statistics collection. Tag must be a valid
+        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
+        #   characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -609,14 +634,15 @@ module Google
         #   end
         #
         def read table, columns, keys: nil, index: nil, limit: nil,
-                 call_options: nil
+                 tag: nil, call_options: nil
           ensure_session!
 
           columns = Array(columns).map(&:to_s)
           keys = Convert.to_key_set keys
-
+          request_options = build_request_options request_options: tag
           session.read table, columns, keys: keys, index: index, limit: limit,
                                        transaction: tx_selector,
+                                       request_options: request_options,
                                        call_options: call_options
         end
 
@@ -1040,6 +1066,13 @@ module Google
         def tx_selector
           return nil if transaction_id.nil?
           V1::TransactionSelector.new id: transaction_id
+        end
+
+        def build_request_options request_tag: nil
+          options = {}
+          options[:transaction_tag] = transaction_tag if transaction_tag
+          options[:request_tag] = request_tag if request_tag
+          options
         end
 
         ##

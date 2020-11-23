@@ -163,6 +163,23 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied
+        #     to queries or reads, used for statistics collection. Both
+        #     request_tag and transaction_tag can be specified for a read or
+        #     query that belongs to a transaction. This field is ignored for
+        #     requests where it's not applicable (e.g. CommitRequest).
+        #     `request_tag` must be a valid identifier of the form:
+        #     `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64 characters in length.
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #     about this transaction. Both request_tag and transaction_tag can
+        #     be specified for a read or query that belongs to a transaction.
+        #     The value of transaction_tag should be the same for all requests
+        #     belonging to the same transaction. If this request doesn't belong
+        #     to any transaction, transaction_tag will be ignored.
+        #     `transaction_tag` must be a valid identifier of the format:
+        #     [a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -314,7 +331,7 @@ module Google
         #
         def execute_query sql, params: nil, types: nil, transaction: nil,
                           partition_token: nil, seqno: nil, query_options: nil,
-                          call_options: nil
+                          request_options: nil, call_options: nil
           ensure_service!
           if query_options.nil?
             query_options = @query_options
@@ -328,6 +345,7 @@ module Google
                                           partition_token: partition_token,
                                           seqno: seqno,
                                           query_options: query_options,
+                                          request_options: request_options,
                                           call_options: call_options
           @last_updated_at = Time.now
           results
@@ -341,6 +359,23 @@ module Google
         #   transactions.
         # @param [Integer] seqno A per-transaction sequence number used to
         #   identify this request.
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied
+        #     to queries or reads, used for statistics collection. Both
+        #     request_tag and transaction_tag can be specified for a read or
+        #     query that belongs to a transaction. This field is ignored for
+        #     requests where it's not applicable (e.g. CommitRequest).
+        #     `request_tag` must be a valid identifier of the form:
+        #     `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64 characters in length.
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #     about this transaction. Both request_tag and transaction_tag can
+        #     be specified for a read or query that belongs to a transaction.
+        #     The value of transaction_tag should be the same for all requests
+        #     belonging to the same transaction. If this request doesn't belong
+        #     to any transaction, transaction_tag will be ignored.
+        #     `transaction_tag` must be a valid identifier of the format:
+        #     [a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -369,7 +404,8 @@ module Google
         # @return [Array<Integer>] A list with the exact number of rows that
         #   were modified for each DML statement.
         #
-        def batch_update transaction, seqno, call_options: nil
+        def batch_update transaction, seqno, request_options: nil,
+                         call_options: nil
           ensure_service!
 
           raise ArgumentError, "block is required" unless block_given?
@@ -379,6 +415,7 @@ module Google
 
           results = service.execute_batch_dml path, transaction,
                                               batch.statements, seqno,
+                                              request_options: request_options,
                                               call_options: call_options
           @last_updated_at = Time.now
           results
@@ -403,6 +440,23 @@ module Google
         # @param [Google::Cloud::Spanner::V1::TransactionSelector] transaction The
         #   transaction selector value to send. Only used for single-use
         #   transactions.
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied
+        #     to queries or reads, used for statistics collection. Both
+        #     request_tag and transaction_tag can be specified for a read or
+        #     query that belongs to a transaction. This field is ignored for
+        #     requests where it's not applicable (e.g. CommitRequest).
+        #     `request_tag` must be a valid identifier of the form:
+        #     `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64 characters in length.
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #     about this transaction. Both request_tag and transaction_tag can
+        #     be specified for a read or query that belongs to a transaction.
+        #     The value of transaction_tag should be the same for all requests
+        #     belonging to the same transaction. If this request doesn't belong
+        #     to any transaction, transaction_tag will be ignored.
+        #     `transaction_tag` must be a valid identifier of the format:
+        #     [a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -434,13 +488,15 @@ module Google
         #   end
         #
         def read table, columns, keys: nil, index: nil, limit: nil,
-                 transaction: nil, partition_token: nil, call_options: nil
+                 transaction: nil, partition_token: nil, request_options: nil,
+                 call_options: nil
           ensure_service!
 
           results = Results.read service, path, table, columns,
                                  keys: keys, index: index, limit: limit,
                                  transaction: transaction,
                                  partition_token: partition_token,
+                                 request_options: request_options,
                                  call_options: call_options
           @last_updated_at = Time.now
           results
@@ -494,6 +550,23 @@ module Google
         #     {CommitResponse}. Default value is `false`
         #
         # transaction. Default it is `false`.
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied
+        #     to queries or reads, used for statistics collection. Both
+        #     request_tag and transaction_tag can be specified for a read or
+        #     query that belongs to a transaction. This field is ignored for
+        #     requests where it's not applicable (e.g. CommitRequest).
+        #     `request_tag` must be a valid identifier of the form:
+        #     `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64 characters in length.
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #     about this transaction. Both request_tag and transaction_tag can
+        #     be specified for a read or query that belongs to a transaction.
+        #     The value of transaction_tag should be the same for all requests
+        #     belonging to the same transaction. If this request doesn't belong
+        #     to any transaction, transaction_tag will be ignored.
+        #     `transaction_tag` must be a valid identifier of the format:
+        #     [a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -542,13 +615,15 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
-        def commit transaction_id: nil, commit_options: nil, call_options: nil
+        def commit transaction_id: nil, commit_options: nil, request_options: nil,
+                   call_options: nil
           ensure_service!
           commit = Commit.new
           yield commit
           commit_resp = service.commit path, commit.mutations,
                                        transaction_id: transaction_id,
                                        commit_options: commit_options,
+                                       request_options: request_options,
                                        call_options: call_options
           @last_updated_at = Time.now
           resp = CommitResponse.from_grpc commit_resp
@@ -590,6 +665,23 @@ module Google
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`
         #
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied
+        #     to queries or reads, used for statistics collection. Both
+        #     request_tag and transaction_tag can be specified for a read or
+        #     query that belongs to a transaction. This field is ignored for
+        #     requests where it's not applicable (e.g. CommitRequest).
+        #     `request_tag` must be a valid identifier of the form:
+        #     `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64 characters in length.
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #     about this transaction. Both request_tag and transaction_tag can
+        #     be specified for a read or query that belongs to a transaction.
+        #     The value of transaction_tag should be the same for all requests
+        #     belonging to the same transaction. If this request doesn't belong
+        #     to any transaction, transaction_tag will be ignored.
+        #     `transaction_tag` must be a valid identifier of the format:
+        #     [a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -633,10 +725,11 @@ module Google
         #   puts commit_resp.stats.mutation_count
         #
         def upsert table, *rows, transaction_id: nil, commit_options: nil,
-                   call_options: nil
+                   request_options: nil, call_options: nil
           opts = {
             transaction_id: transaction_id,
             commit_options: commit_options,
+            request_options: request_options,
             call_options: call_options
           }
           commit(**opts) do |c|
@@ -679,6 +772,23 @@ module Google
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`
         #
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied
+        #     to queries or reads, used for statistics collection. Both
+        #     request_tag and transaction_tag can be specified for a read or
+        #     query that belongs to a transaction. This field is ignored for
+        #     requests where it's not applicable (e.g. CommitRequest).
+        #     `request_tag` must be a valid identifier of the form:
+        #     `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64 characters in length.
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #     about this transaction. Both request_tag and transaction_tag can
+        #     be specified for a read or query that belongs to a transaction.
+        #     The value of transaction_tag should be the same for all requests
+        #     belonging to the same transaction. If this request doesn't belong
+        #     to any transaction, transaction_tag will be ignored.
+        #     `transaction_tag` must be a valid identifier of the format:
+        #     [a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -722,10 +832,11 @@ module Google
         #   puts commit_resp.stats.mutation_count
         #
         def insert table, *rows, transaction_id: nil, commit_options: nil,
-                   call_options: nil
+                   request_options: nil, call_options: nil
           opts = {
             transaction_id: transaction_id,
             commit_options: commit_options,
+            request_options: request_options,
             call_options: call_options
           }
           commit(**opts) do |c|
@@ -767,6 +878,23 @@ module Google
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`
         #
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied
+        #     to queries or reads, used for statistics collection. Both
+        #     request_tag and transaction_tag can be specified for a read or
+        #     query that belongs to a transaction. This field is ignored for
+        #     requests where it's not applicable (e.g. CommitRequest).
+        #     `request_tag` must be a valid identifier of the form:
+        #     `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64 characters in length.
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #     about this transaction. Both request_tag and transaction_tag can
+        #     be specified for a read or query that belongs to a transaction.
+        #     The value of transaction_tag should be the same for all requests
+        #     belonging to the same transaction. If this request doesn't belong
+        #     to any transaction, transaction_tag will be ignored.
+        #     `transaction_tag` must be a valid identifier of the format:
+        #     [a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -810,10 +938,11 @@ module Google
         #   puts commit_resp.stats.mutation_count
         #
         def update table, *rows, transaction_id: nil, commit_options: nil,
-                   call_options: nil
+                   request_options: nil, call_options: nil
           opts = {
             transaction_id: transaction_id,
             commit_options: commit_options,
+            request_options: request_options,
             call_options: call_options
           }
           commit(**opts) do |c|
@@ -857,6 +986,23 @@ module Google
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`.
         #
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied
+        #     to queries or reads, used for statistics collection. Both
+        #     request_tag and transaction_tag can be specified for a read or
+        #     query that belongs to a transaction. This field is ignored for
+        #     requests where it's not applicable (e.g. CommitRequest).
+        #     `request_tag` must be a valid identifier of the form:
+        #     `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64 characters in length.
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #     about this transaction. Both request_tag and transaction_tag can
+        #     be specified for a read or query that belongs to a transaction.
+        #     The value of transaction_tag should be the same for all requests
+        #     belonging to the same transaction. If this request doesn't belong
+        #     to any transaction, transaction_tag will be ignored.
+        #     `transaction_tag` must be a valid identifier of the format:
+        #     [a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -900,10 +1046,11 @@ module Google
         #   puts commit_resp.stats.mutation_count
         #
         def replace table, *rows, transaction_id: nil, commit_options: nil,
-                    call_options: nil
+                    request_options: nil, call_options: nil
           opts = {
             transaction_id: transaction_id,
             commit_options: commit_options,
+            request_options: request_options,
             call_options: call_options
           }
           commit(**opts) do |c|
@@ -928,6 +1075,23 @@ module Google
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`
         #
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied
+        #     to queries or reads, used for statistics collection. Both
+        #     request_tag and transaction_tag can be specified for a read or
+        #     query that belongs to a transaction. This field is ignored for
+        #     requests where it's not applicable (e.g. CommitRequest).
+        #     `request_tag` must be a valid identifier of the form:
+        #     `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64 characters in length.
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #     about this transaction. Both request_tag and transaction_tag can
+        #     be specified for a read or query that belongs to a transaction.
+        #     The value of transaction_tag should be the same for all requests
+        #     belonging to the same transaction. If this request doesn't belong
+        #     to any transaction, transaction_tag will be ignored.
+        #     `transaction_tag` must be a valid identifier of the format:
+        #     [a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -968,10 +1132,11 @@ module Google
         #   puts commit_resp.stats.mutation_count
         #
         def delete table, keys = [], transaction_id: nil, commit_options: nil,
-                   call_options: nil
+                   request_options: nil, call_options: nil
           opts = {
             transaction_id: transaction_id,
             commit_options: commit_options,
+            request_options: request_options,
             call_options: call_options
           }
           commit(**opts) do |c|

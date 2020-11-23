@@ -223,6 +223,10 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
+        # @param [String] tag A per-request tag which can be applied to queries
+        #   or reads, used for statistics collection. Tag must be a valid
+        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
+        #   characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -373,18 +377,24 @@ module Google
         #   end
         #
         def execute_query sql, params: nil, types: nil, single_use: nil,
-                          query_options: nil, call_options: nil
+                          query_options: nil, tag: nil,
+                          call_options: nil
           validate_single_use_args! single_use
           ensure_service!
 
           params, types = Convert.to_input_params_and_types params, types
-
           single_use_tx = single_use_transaction single_use
+
+          if single_use_tx
+            request_options = build_request_options request_tag: tag
+          end
+
           results = nil
           @pool.with_session do |session|
             results = session.execute_query \
               sql, params: params, types: types, transaction: single_use_tx,
-              query_options: query_options, call_options: call_options
+              query_options: query_options, request_options: request_options,
+              call_options: call_options
           end
           results
         end
@@ -535,6 +545,10 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
+        # @param [String] tag A per-request tag which can be applied to queries
+        #   or reads, used for statistics collection. Tag must be a valid
+        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
+        #   characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -599,16 +613,19 @@ module Google
         #    call_options: call_options
         #
         def execute_partition_update sql, params: nil, types: nil,
-                                     query_options: nil, call_options: nil
+                                     query_options: nil, tag: nil,
+                                     call_options: nil
           ensure_service!
 
           params, types = Convert.to_input_params_and_types params, types
+          request_options = build_request_options request_tag: tag
           results = nil
           @pool.with_session do |session|
             results = session.execute_query \
               sql, params: params, types: types,
               transaction: pdml_transaction(session),
-              query_options: query_options, call_options: call_options
+              query_options: query_options, request_options: request_options,
+              call_options: call_options
           end
           # Stream all PartialResultSet to get ResultSetStats
           results.rows.to_a
@@ -689,6 +706,10 @@ module Google
         #       Useful for reading the freshest data available at a nearby
         #       replica, while bounding the possible staleness if the local
         #       replica has fallen behind.
+        # @param [String] tag A per-request tag which can be applied to queries
+        #   or reads, used for statistics collection. Tag must be a valid
+        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
+        #   characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -754,19 +775,24 @@ module Google
         #   end
         #
         def read table, columns, keys: nil, index: nil, limit: nil,
-                 single_use: nil, call_options: nil
+                 single_use: nil, tag: nil, call_options: nil
           validate_single_use_args! single_use
           ensure_service!
 
           columns = Array(columns).map(&:to_s)
           keys = Convert.to_key_set keys
-
           single_use_tx = single_use_transaction single_use
+
+          if single_use_tx
+            request_options = build_request_options request_tag: tag
+          end
+
           results = nil
           @pool.with_session do |session|
             results = session.read \
               table, columns, keys: keys, index: index, limit: limit,
                               transaction: single_use_tx,
+                              request_options: request_options,
                               call_options: call_options
           end
           results
@@ -809,6 +835,9 @@ module Google
         #
         #   See [Data
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
+        # @param [String] tag A tag used for statistics collection about
+        #   transaction. `transaction_tag` must be a valid identifier of
+        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -846,9 +875,11 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
-        def upsert table, rows, commit_options: nil
+        def upsert table, rows, commit_options: nil, tag: nil
+          request_options = build_request_options transaction_tag: tag
           @pool.with_session do |session|
-            session.upsert table, rows, commit_options: commit_options
+            session.upsert table, rows, commit_options: commit_options,
+                           request_options: request_options
           end
         end
         alias save upsert
@@ -889,6 +920,9 @@ module Google
         #
         #   See [Data
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
+        # @param [String] tag A tag used for statistics collection about
+        #   transaction. A tag must be a valid identifier of
+        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -926,9 +960,11 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
-        def insert table, rows, commit_options: nil
+        def insert table, rows, commit_options: nil, tag: nil
+          request_options = build_request_options transaction_tag: tag
           @pool.with_session do |session|
-            session.insert table, rows, commit_options: commit_options
+            session.insert table, rows, commit_options: commit_options,
+                           request_options: request_options
           end
         end
 
@@ -968,6 +1004,9 @@ module Google
         #
         #   See [Data
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
+        # @param [String] tag A tag used for statistics collection about
+        #   transaction. A tag must be a valid identifier of
+        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -1005,9 +1044,11 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
-        def update table, rows, commit_options: nil
+        def update table, rows, commit_options: nil, tag: nil
+          request_options = build_request_options transaction_tag: tag
           @pool.with_session do |session|
-            session.update table, rows, commit_options: commit_options
+            session.update table, rows, commit_options: commit_options,
+                           request_options: request_options
           end
         end
 
@@ -1049,6 +1090,9 @@ module Google
         #
         #   See [Data
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
+        # @param [String] tag A tag used for statistics collection about
+        #   transaction. A tag must be a valid identifier of
+        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -1086,9 +1130,11 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
-        def replace table, rows, commit_options: nil
+        def replace table, rows, commit_options: nil, tag: nil
+          request_options = build_request_options transaction_tag: tag
           @pool.with_session do |session|
-            session.replace table, rows, commit_options: commit_options
+            session.replace table, rows, commit_options: commit_options,
+                            request_options: request_options
           end
         end
 
@@ -1120,6 +1166,9 @@ module Google
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`
         #
+        # @param [String] tag A tag used for statistics collection about
+        #   transaction. A tag must be a valid identifier of
+        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -1159,9 +1208,12 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
-        def delete table, keys = [], commit_options: nil, call_options: nil
+        def delete table, keys = [], commit_options: nil, tag: nil,
+                   call_options: nil
+          request_options = build_request_options transaction_tag: tag
           @pool.with_session do |session|
             session.delete table, keys, commit_options: commit_options,
+                           request_options: request_options,
                            call_options: call_options
           end
         end
@@ -1189,6 +1241,9 @@ module Google
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`
         #
+        # @param [String] tag A tag used for statistics collection about
+        #   transaction. `transaction_tag` must be a valid identifier of
+        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -1237,18 +1292,21 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
-        def commit commit_options: nil, call_options: nil, &block
+        def commit commit_options: nil, tag: nil, call_options: nil, &block
+        def commit tag: nil, call_options: nil, &block
           raise ArgumentError, "Must provide a block" unless block_given?
 
+          request_options = build_request_options transaction_tag: tag
           @pool.with_session do |session|
             session.commit(
-              commit_options: commit_options, call_options: call_options, &block
+              commit_options: commit_options, request_options: request_options,
+              call_options: call_options,
+              &block
             )
           end
         end
 
-        # rubocop:disable Metrics/AbcSize
-        # rubocop:disable Metrics/MethodLength
+        # rubocop:disable Metrics/AbcSize, Metrics/BlockLength, Metrics/MethodLength
 
         ##
         # Creates a transaction for reads and writes that execute atomically at
@@ -1274,6 +1332,10 @@ module Google
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`
         #
+        # @param [String] tag A tag used for statistics collection about
+        #   transaction. The value of transaction_tag should be the same
+        #   for all requests belonging to the same transaction. A tag must be
+        #   a valid identifier of the format: [a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -1350,7 +1412,8 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
-        def transaction deadline: 120, commit_options: nil, call_options: nil
+        def transaction deadline: 120, commit_options: nil, tag: nil,
+                        call_options: nil
           ensure_service!
           unless Thread.current[:transaction_id].nil?
             raise "Nested transactions are not allowed"
@@ -1359,14 +1422,17 @@ module Google
           deadline = validate_deadline deadline
           backoff = 1.0
           start_time = current_time
+          request_options = build_request_options transaction_tag: tag
 
           @pool.with_transaction do |tx|
+            tx.transaction_tag = tag if tag
             Thread.current[:transaction_id] = tx.transaction_id
             yield tx
             commit_resp = @project.service.commit \
               tx.session.path, tx.mutations,
               transaction_id: tx.transaction_id,
               commit_options: commit_options,
+              request_options: request_options,
               call_options: call_options
             resp = CommitResponse.from_grpc commit_resp
             commit_options ? resp : resp.timestamp
@@ -1395,8 +1461,7 @@ module Google
           end
         end
 
-        # rubocop:enable Metrics/AbcSize
-        # rubocop:enable Metrics/MethodLength
+        # rubocop:enable Metrics/AbcSize, Metrics/BlockLength, Metrics/MethodLength
 
         ##
         # Creates a snapshot read-only transaction for reads that execute
@@ -1817,6 +1882,14 @@ module Google
         rescue StandardError
           # Any error indicates the backoff should be handled elsewhere
           nil
+        end
+
+        ## Build request options.
+        def build_request_options request_tag: nil, transaction_tag: nil
+          options = {}
+          options[:request_tag] = request_tag if request_tag
+          options[:transaction_tag] = transaction_tag if transaction_tag
+          options
         end
       end
     end
