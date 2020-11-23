@@ -482,11 +482,9 @@ module Google
         #
         def execute_update sql, params: nil, types: nil, query_options: nil,
                            tag: nil, call_options: nil
-          request_options = build_request_options request_tag: tag
           results = execute_query sql, params: params, types: types,
                                   query_options: query_options,
-                                  request_options: request_options,
-                                  call_options: call_options
+                                  tag: tag, call_options: call_options
           # Stream all PartialResultSet to get ResultSetStats
           results.rows.to_a
           # Raise an error if there is not a row count returned
@@ -639,7 +637,7 @@ module Google
 
           columns = Array(columns).map(&:to_s)
           keys = Convert.to_key_set keys
-          request_options = build_request_options request_options: tag
+          request_options = build_request_options request_tag: tag
           session.read table, columns, keys: keys, index: index, limit: limit,
                                        transaction: tx_selector,
                                        request_options: request_options,
@@ -1069,6 +1067,8 @@ module Google
         end
 
         def build_request_options request_tag: nil
+          return unless request_tag || transaction_tag
+
           options = {}
           options[:transaction_tag] = transaction_tag if transaction_tag
           options[:request_tag] = request_tag if request_tag

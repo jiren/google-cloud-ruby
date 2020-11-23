@@ -1886,6 +1886,8 @@ module Google
 
         ## Build request options.
         def build_request_options request_tag: nil, transaction_tag: nil
+          return unless request_tag || transaction_tag
+
           options = {}
           options[:request_tag] = request_tag if request_tag
           options[:transaction_tag] = transaction_tag if transaction_tag
