@@ -868,7 +868,7 @@ module Google
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
         # @param [String] tag A tag used for statistics collection about
         #   transaction. `transaction_tag` must be a valid identifier of
-        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
+        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -966,7 +966,7 @@ module Google
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
         # @param [String] tag A tag used for statistics collection about
         #   transaction. A tag must be a valid identifier of
-        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
+        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -1063,7 +1063,7 @@ module Google
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
         # @param [String] tag A tag used for statistics collection about
         #   transaction. A tag must be a valid identifier of
-        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
+        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -1161,7 +1161,7 @@ module Google
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
         # @param [String] tag A tag used for statistics collection about
         #   transaction. A tag must be a valid identifier of
-        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
+        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -1249,7 +1249,7 @@ module Google
         #
         # @param [String] tag A tag used for statistics collection about
         #   transaction. A tag must be a valid identifier of
-        #   the format: [a-zA-Z][a-zA-Z0-9_\-]{0,49}
+        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -1334,7 +1334,7 @@ module Google
         #
         # @param [String] tag A tag used for statistics collection about
         #   transaction. `transaction_tag` must be a valid identifier of
-        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
+        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -1438,7 +1438,7 @@ module Google
         # @param [String] tag A tag used for statistics collection about
         #   transaction. The value of transaction_tag should be the same
         #   for all requests belonging to the same transaction. A tag must be
-        #   a valid identifier of the format: [a-zA-Z][a-zA-Z0-9_\-]{0,49}
+        #   a valid identifier of the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
