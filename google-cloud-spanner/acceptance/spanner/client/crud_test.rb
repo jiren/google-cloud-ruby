@@ -158,4 +158,21 @@ describe "Spanner Client", :crud, :spanner do
     _(results.rows.count).must_equal 0
     _(results.timestamp).wont_be :nil?
   end
+
+  it "inserts, updates, upserts, reads, and deletes records with request tagging options" do
+    timestamp = db.insert "accounts", default_account_rows[0], tag: "Tag-CRUD-1"
+    _(timestamp).wont_be :nil?
+
+    results = db.read "accounts", ["account_id"], tag: "Tag-CRURD-2", single_use: { timestamp: @setup_timestamp }
+    _(results.timestamp).wont_be :nil?
+
+     timestamp = db.update "accounts", default_account_rows[0], tag: "Tag-CRUD-3"
+    _(timestamp).wont_be :nil?
+
+    timestamp = db.upsert "accounts", default_account_rows[1], tag: "Tag-CRUD-4"
+    _(timestamp).wont_be :nil?
+
+    timestamp = db.delete "accounts", [1, 2, 3], tag: "Tag-CRUD-5"
+    _(timestamp).wont_be :nil?
+  end
 end

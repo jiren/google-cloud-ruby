@@ -189,6 +189,23 @@ describe "Spanner Client", :transaction, :spanner do
     _(results.rows.first[:reputation]).must_equal original_val + 2
   end
 
+  it "execute transaction with tagging options" do
+    timestamp = db.transaction tag: "Tag-1" do |tx|
+      tx.execute_query "SELECT * from accounts", tag: "Tag-1-1"
+      tx.batch_update tag: "Tag-1-2" do |b|
+        b.batch_update(
+          "UPDATE accounts SET username = 'Charlie' WHERE account_id = 1",
+        )
+      end
+
+      tx.read "accounts", columns, tag: "Tag-1-3"
+      tx.insert "accounts", additional_account
+    end
+
+    _(timestamp).must_be_kind_of Time
+  end
+
+
   it "can execute sql with query options" do
     query_options = { optimizer_version: "latest" }
     db.transaction do |tx|

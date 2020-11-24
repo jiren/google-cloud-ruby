@@ -51,4 +51,9 @@ describe "Spanner Client", :pdml, :spanner do
     post_results = db.execute_sql "SELECT * FROM accounts WHERE active = TRUE", single_use: { strong: true }
     _(post_results.rows.count).must_equal 3
   end
+
+  it "executes a Partitioned DML statement with request tagging option" do
+    pdml_row_count = db.execute_partition_update "UPDATE accounts a SET a.active = TRUE WHERE a.active = FALSE", tag: "Tag-P-1"
+    _(pdml_row_count).must_equal 1
+  end
 end
