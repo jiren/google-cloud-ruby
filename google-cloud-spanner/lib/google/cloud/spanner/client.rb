@@ -384,10 +384,7 @@ module Google
 
           params, types = Convert.to_input_params_and_types params, types
           single_use_tx = single_use_transaction single_use
-
-          if single_use_tx
-            request_options = build_request_options request_tag: tag
-          end
+          request_options = build_request_options request_tag: tag
 
           results = nil
           @pool.with_session do |session|
@@ -782,10 +779,7 @@ module Google
           columns = Array(columns).map(&:to_s)
           keys = Convert.to_key_set keys
           single_use_tx = single_use_transaction single_use
-
-          if single_use_tx
-            request_options = build_request_options request_tag: tag
-          end
+          request_options = build_request_options request_tag: tag
 
           results = nil
           @pool.with_session do |session|
@@ -1168,7 +1162,7 @@ module Google
         #
         # @param [String] tag A tag used for statistics collection about
         #   transaction. A tag must be a valid identifier of
-        #   the format:[a-zA-Z][a-zA-Z0-9_\-]{0,49}
+        #   the format: [a-zA-Z][a-zA-Z0-9_\-]{0,49}
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:

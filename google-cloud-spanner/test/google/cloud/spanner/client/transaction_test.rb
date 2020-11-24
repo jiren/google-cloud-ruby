@@ -60,6 +60,20 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
   end
   let(:results_grpc) { Google::Cloud::Spanner::V1::PartialResultSet.new results_hash }
   let(:results_enum) { Array(results_grpc).to_enum }
+  let(:update_results_grpc) {
+    Google::Cloud::Spanner::V1::PartialResultSet.new(
+      metadata: Google::Cloud::Spanner::V1::ResultSetMetadata.new(
+        row_type: Google::Cloud::Spanner::V1::StructType.new(
+          fields: []
+        )
+      ),
+      values: [],
+      stats: Google::Cloud::Spanner::V1::ResultSetStats.new(
+        row_count_exact: 1
+      )
+    )
+  }
+  let(:update_results_enum) { Array(update_results_grpc).to_enum }
   let(:client) { spanner.client instance_id, database_id, pool: { min: 0 } }
   let(:tx_opts) { Google::Cloud::Spanner::V1::TransactionOptions.new(read_write: Google::Cloud::Spanner::V1::TransactionOptions::ReadWrite.new) }
   let(:commit_time) { Time.now }
@@ -533,6 +547,55 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
     mock.verify
 
     assert_results results
+  end
+
+  it "can execute a trasaction with transaction and request tag" do
+    mutations = [
+      Google::Cloud::Spanner::V1::Mutation.new(
+        update: Google::Cloud::Spanner::V1::Mutation::Write.new(
+          table: "users", columns: %w(id name active),
+          values: [Google::Cloud::Spanner::Convert.object_to_grpc_value([1, "Charlie", false]).list_value]
+        )
+      )
+    ]
+
+    mock = Minitest::Mock.new
+    spanner.service.mocked_service = mock
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :begin_transaction, transaction_grpc, [{
+      session: session_grpc.name, options: tx_opts, request_options: nil
+    }, default_options]
+
+    expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users",
+                                 transaction: tx_selector, seqno: 1,
+                                 request_options: { transaction_tag: 'Tag-1', request_tag: 'Tag-1-1'},
+                                 options: default_options
+    expect_execute_streaming_sql update_results_enum, session_grpc.name,
+                                 "UPDATE users SET active = true", transaction: tx_selector,
+                                 seqno: 2, request_options: { transaction_tag: "Tag-1", request_tag: "Tag-1-2" },
+                                 options: default_options
+
+    mock.expect :commit, commit_resp, [{
+      session: session_grpc.name, mutations: mutations, transaction_id: transaction_id,
+      single_use_transaction: nil, request_options: { transaction_tag: 'Tag-1' }
+    }, default_options]
+
+    # transaction checkin
+    mock.expect :begin_transaction, transaction_grpc, [{
+      session: session_grpc.name, options: tx_opts, request_options: nil
+    }, default_options]
+
+    client.transaction tag: 'Tag-1' do |tx|
+      _(tx).must_be_kind_of Google::Cloud::Spanner::Transaction
+
+      tx.execute_query "SELECT * FROM users", tag: 'Tag-1-1'
+      tx.execute_update "UPDATE users SET active = true", tag: "Tag-1-2"
+      tx.update "users", [{ id: 1, name: "Charlie", active: false }]
+    end
+
+    shutdown_client! client
+
+    mock.verify
   end
 
   def assert_results results

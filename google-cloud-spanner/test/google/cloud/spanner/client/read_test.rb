@@ -297,6 +297,27 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
     assert_results results
   end
 
+  it "can read with request tag" do
+    mock = Minitest::Mock.new
+    mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
+    mock.expect :streaming_read, results_enum, [{
+      session: session_grpc.name, table: "my-table",
+      columns: ["id"],
+      key_set: Google::Cloud::Spanner::V1::KeySet.new(all: true),
+      transaction: nil, index: nil, limit: nil, resume_token: nil, partition_token: nil,
+      request_options: { request_tag: 'Tag-1'}
+     }, default_options]
+    spanner.service.mocked_service = mock
+
+    results = client.read "my-table", [:id], tag: 'Tag-1'
+
+    shutdown_client! client
+
+    mock.verify
+
+    assert_results results
+  end
+
   def assert_results results
     _(results).must_be_kind_of Google::Cloud::Spanner::Results
 

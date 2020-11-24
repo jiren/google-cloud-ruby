@@ -180,7 +180,7 @@ class MockSpanner < Minitest::Spec
   def expect_execute_streaming_sql results_enum, session_name, sql,
                                    transaction: nil, params: nil, param_types: nil,
                                    resume_token: nil, partition_token: nil, seqno: nil,
-                                   query_options: nil, options: nil
+                                   query_options: nil, options: nil, request_options: nil
     spanner.service.mocked_service.expect :execute_streaming_sql, results_enum do |request, gapic_options|
       request[:session] == session_name &&
         request[:sql] == sql &&
@@ -190,7 +190,7 @@ class MockSpanner < Minitest::Spec
         request[:resume_token] == resume_token &&
         request[:partition_token] == partition_token &&
         request[:seqno] == seqno &&
-        # request[:request_options] == request_options &&
+        request[:request_options] == request_options &&
         gapic_options == options &&
         request[:query_options] == query_options
     end
