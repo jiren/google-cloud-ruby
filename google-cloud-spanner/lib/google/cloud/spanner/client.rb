@@ -376,6 +376,19 @@ module Google
         #     puts "User #{row[:id]} is #{row[:name]}"
         #   end
         #
+        # @example Query using tag for request query statistics collection.
+        #   require "google/cloud/spanner"
+        #
+        #   spanner = Google::Cloud::Spanner.new
+        #
+        #   db = spanner.client "my-instance", "my-database"
+        #
+        #   results = db.execute_query "SELECT * FROM users", tag: "Tag-1"
+        #
+        #   results.rows.each do |row|
+        #     puts "User #{row[:id]} is #{row[:name]}"
+        #   end
+        #
         def execute_query sql, params: nil, types: nil, single_use: nil,
                           query_options: nil, tag: nil,
                           call_options: nil
@@ -609,6 +622,16 @@ module Google
         #    "UPDATE users SET friends = NULL WHERE active = false",
         #    call_options: call_options
         #
+        # @example Query using tag for request query statistics collection.
+        #
+        #   require "google/cloud/spanner"
+        #
+        #   spanner = Google::Cloud::Spanner.new
+        #   db = spanner.client "my-instance", "my-database"
+        #
+        #   row_count = db.execute_partition_update \
+        #     "UPDATE users SET friends = NULL WHERE active = false", tag: "Tag-1"
+        #
         def execute_partition_update sql, params: nil, types: nil,
                                      query_options: nil, tag: nil,
                                      call_options: nil
@@ -771,6 +794,20 @@ module Google
         #     puts "User #{row[:id]} is #{row[:name]}"
         #   end
         #
+        # @example Read using tag for read statistics collection.
+        #
+        #   require "google/cloud/spanner"
+        #
+        #   spanner = Google::Cloud::Spanner.new
+        #
+        #   db = spanner.client "my-instance", "my-database"
+        #
+        #   results = db.read "users", [:id, :name], tag: "Tag-1"
+        #
+        #   results.rows.each do |row|
+        #     puts "User #{row[:id]} is #{row[:name]}"
+        #   end
+        #
         def read table, columns, keys: nil, index: nil, limit: nil,
                  single_use: nil, tag: nil, call_options: nil
           validate_single_use_args! single_use
@@ -869,6 +906,19 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
+        # @example Upsert using tag for transaction statistics collection.
+        #
+        #   require "google/cloud/spanner"
+        #
+        #   spanner = Google::Cloud::Spanner.new
+        #
+        #   db = spanner.client "my-instance", "my-database"
+        #
+        #   request_options = { tag: "Bulk-Upsert" }
+        #   db.upsert "users", [{ id: 1, name: "Charlie", active: false },
+        #                       { id: 2, name: "Harvey",  active: true }],
+        #                       request_options: request_options
+        #
         def upsert table, rows, commit_options: nil, tag: nil
           request_options = build_request_options transaction_tag: tag
           @pool.with_session do |session|
@@ -954,6 +1004,19 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
+        # @example Insert using tag for transaction statistics collection.
+        #
+        #   require "google/cloud/spanner"
+        #
+        #   spanner = Google::Cloud::Spanner.new
+        #
+        #   db = spanner.client "my-instance", "my-database"
+        #
+        #   request_options = { tag: "BulkInsert-Users" }
+        #   db.insert "users", [{ id: 1, name: "Charlie", active: false },
+        #                       { id: 2, name: "Harvey",  active: true }],
+        #                       request_options: request_options
+        #
         def insert table, rows, commit_options: nil, tag: nil
           request_options = build_request_options transaction_tag: tag
           @pool.with_session do |session|
@@ -1037,6 +1100,18 @@ module Google
         #
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
+        #
+        # @example Updte using tag for transaction statistics collection.
+        #   require "google/cloud/spanner"
+        #
+        #   spanner = Google::Cloud::Spanner.new
+        #
+        #   db = spanner.client "my-instance", "my-database"
+        #
+        #   request_options = { tag: "BulkUpdate-Users" }
+        #   db.update "users", [{ id: 1, name: "Charlie", active: false },
+        #                       { id: 2, name: "Harvey",  active: true }],
+        #                      request_options: request_options
         #
         def update table, rows, commit_options: nil, tag: nil
           request_options = build_request_options transaction_tag: tag
@@ -1124,6 +1199,18 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
+        # @example Replace using tag for transaction statistics collection.
+        #   require "google/cloud/spanner"
+        #
+        #   spanner = Google::Cloud::Spanner.new
+        #
+        #   db = spanner.client "my-instance", "my-database"
+        #
+        #   request_options = { tag: "BulkReplace-Users" }
+        #   db.replace "users", [{ id: 1, name: "Charlie", active: false },
+        #                        { id: 2, name: "Harvey",  active: true }],
+        #                       request_options: request_options
+        #
         def replace table, rows, commit_options: nil, tag: nil
           request_options = build_request_options transaction_tag: tag
           @pool.with_session do |session|
@@ -1201,6 +1288,16 @@ module Google
         #
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
+        #
+        # @example Delete using tag for transaction statistics collection.
+        #   require "google/cloud/spanner"
+        #
+        #   spanner = Google::Cloud::Spanner.new
+        #
+        #   db = spanner.client "my-instance", "my-database"
+        #
+        #   request_options = { tag: "BulkDelete-Users" }
+        #   db.delete "users", [1, 2, 3], request_options: request_options
         #
         def delete table, keys = [], commit_options: nil, tag: nil,
                    call_options: nil
@@ -1286,8 +1383,20 @@ module Google
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
         #
+        # @example Commit using tag for transaction statistics collection.
+        #   require "google/cloud/spanner"
+        #
+        #   spanner = Google::Cloud::Spanner.new
+        #
+        #   db = spanner.client "my-instance", "my-database"
+        #
+        #   request_options = { tag: "BulkManipulate-Users" }
+        #   db.commit request_options: request_options do |c|
+        #     c.update "users", [{ id: 1, name: "Charlie", active: false }]
+        #     c.insert "users", [{ id: 2, name: "Harvey",  active: true }]
+        #   end
+        #
         def commit commit_options: nil, tag: nil, call_options: nil, &block
-        def commit tag: nil, call_options: nil, &block
           raise ArgumentError, "Must provide a block" unless block_given?
 
           request_options = build_request_options transaction_tag: tag
@@ -1405,6 +1514,30 @@ module Google
         #
         #   puts commit_resp.timestamp
         #   puts commit_resp.stats.mutation_count
+        #
+        # @example Tags for request and transaction statistics collection.
+        #
+        #   require "google/cloud/spanner"
+        #
+        #   spanner = Google::Cloud::Spanner.new
+        #   db = spanner.client "my-instance", "my-database"
+        #
+        #   # Transaction tag will be set to "Users-Txn"
+        #   db.transaction request_options: { tag: "Users-Txn" } do |tx|
+        #     # The transaction tag set as "Users-Txn"
+        #     # The request tag set as "Users-Txn-1"
+        #     request_options = { tag: "Users-Txn-1" }
+        #     results = tx.execute_query "SELECT * FROM users",
+        #                                request_options: request_options
+        #
+        #     results.rows.each do |row|
+        #       puts "User #{row[:id]} is #{row[:name]}"
+        #     end
+        #
+        #     # The transaction tag set as "Users-Txn"
+        #     tx.update "users", [{ id: 1, name: "Charlie", active: false }]
+        #     tx.insert "users", [{ id: 2, name: "Harvey",  active: true }]
+        #   end
         #
         def transaction deadline: 120, commit_options: nil, tag: nil,
                         call_options: nil
