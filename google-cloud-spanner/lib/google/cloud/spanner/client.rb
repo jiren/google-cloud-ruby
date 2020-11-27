@@ -1333,8 +1333,8 @@ module Google
         #     {CommitResponse}. Default value is `false`
         #
         # @param [String] tag A tag used for statistics collection about
-        #   transaction. A tag must be a valid identifier of
-        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
+        #   transaction. A tag must be a valid identifier of the format:
+        #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -1436,7 +1436,7 @@ module Google
         #     {CommitResponse}. Default value is `false`
         #
         # @param [String] tag A tag used for statistics collection about
-        #   transaction. The value of transaction tag should be the same
+        #   transaction. The value of a transaction tag should be the same
         #   for all requests belonging to the same transaction. A tag must be
         #   a valid identifier of the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         # @param [Hash] call_options A hash of values to specify the custom
