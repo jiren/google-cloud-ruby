@@ -325,7 +325,8 @@ module Google
           @seqno += 1
 
           params, types = Convert.to_input_params_and_types params, types
-          request_options = build_request_options request_tag: tag
+          request_options = Convert.to_request_options \
+            request_tag: tag, transaction_tag: transaction_tag
           session.execute_query sql, params: params, types: types,
                                      transaction: tx_selector, seqno: @seqno,
                                      query_options: query_options,
@@ -574,7 +575,8 @@ module Google
         def batch_update tag: nil, call_options: nil, &block
           ensure_session!
           @seqno += 1
-          request_options = build_request_options request_tag: tag
+          request_options = Convert.to_request_options \
+            request_tag: tag, transaction_tag: transaction_tag
           session.batch_update tx_selector, @seqno,
                                request_options: request_options,
                                call_options: call_options, &block
@@ -637,7 +639,8 @@ module Google
 
           columns = Array(columns).map(&:to_s)
           keys = Convert.to_key_set keys
-          request_options = build_request_options request_tag: tag
+          request_options = Convert.to_request_options request_tag: tag,
+                                                       transaction_tag: transaction_tag
           session.read table, columns, keys: keys, index: index, limit: limit,
                                        transaction: tx_selector,
                                        request_options: request_options,
@@ -1064,15 +1067,6 @@ module Google
         def tx_selector
           return nil if transaction_id.nil?
           V1::TransactionSelector.new id: transaction_id
-        end
-
-        def build_request_options request_tag: nil
-          return unless request_tag || transaction_tag
-
-          options = {}
-          options[:transaction_tag] = transaction_tag if transaction_tag
-          options[:request_tag] = request_tag if request_tag
-          options
         end
 
         ##

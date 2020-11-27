@@ -397,7 +397,7 @@ module Google
 
           params, types = Convert.to_input_params_and_types params, types
           single_use_tx = single_use_transaction single_use
-          request_options = build_request_options request_tag: tag
+          request_options = Convert.to_request_options request_tag: tag
 
           results = nil
           @pool.with_session do |session|
@@ -638,7 +638,7 @@ module Google
           ensure_service!
 
           params, types = Convert.to_input_params_and_types params, types
-          request_options = build_request_options request_tag: tag
+          request_options = Convert.to_request_options request_tag: tag
           results = nil
           @pool.with_session do |session|
             results = session.execute_query \
@@ -816,7 +816,7 @@ module Google
           columns = Array(columns).map(&:to_s)
           keys = Convert.to_key_set keys
           single_use_tx = single_use_transaction single_use
-          request_options = build_request_options request_tag: tag
+          request_options = Convert.to_request_options request_tag: tag
 
           results = nil
           @pool.with_session do |session|
@@ -867,7 +867,7 @@ module Google
         #   See [Data
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
         # @param [String] tag A tag used for statistics collection about
-        #   transaction. `transaction_tag` must be a valid identifier of
+        #   transaction. A tag must be a valid identifier of
         #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         #
         # @param [Hash] commit_options A hash of commit options.
@@ -920,7 +920,7 @@ module Google
         #                       request_options: request_options
         #
         def upsert table, rows, commit_options: nil, tag: nil
-          request_options = build_request_options transaction_tag: tag
+          request_options = Convert.to_request_options transaction_tag: tag
           @pool.with_session do |session|
             session.upsert table, rows, commit_options: commit_options,
                            request_options: request_options
@@ -1018,7 +1018,7 @@ module Google
         #                       request_options: request_options
         #
         def insert table, rows, commit_options: nil, tag: nil
-          request_options = build_request_options transaction_tag: tag
+          request_options = Convert.to_request_options transaction_tag: tag
           @pool.with_session do |session|
             session.insert table, rows, commit_options: commit_options,
                            request_options: request_options
@@ -1114,7 +1114,7 @@ module Google
         #                      request_options: request_options
         #
         def update table, rows, commit_options: nil, tag: nil
-          request_options = build_request_options transaction_tag: tag
+          request_options = Convert.to_request_options transaction_tag: tag
           @pool.with_session do |session|
             session.update table, rows, commit_options: commit_options,
                            request_options: request_options
@@ -1212,7 +1212,7 @@ module Google
         #                       request_options: request_options
         #
         def replace table, rows, commit_options: nil, tag: nil
-          request_options = build_request_options transaction_tag: tag
+          request_options = Convert.to_request_options transaction_tag: tag
           @pool.with_session do |session|
             session.replace table, rows, commit_options: commit_options,
                             request_options: request_options
@@ -1301,7 +1301,7 @@ module Google
         #
         def delete table, keys = [], commit_options: nil, tag: nil,
                    call_options: nil
-          request_options = build_request_options transaction_tag: tag
+          request_options = Convert.to_request_options transaction_tag: tag
           @pool.with_session do |session|
             session.delete table, keys, commit_options: commit_options,
                            request_options: request_options,
@@ -1333,7 +1333,7 @@ module Google
         #     {CommitResponse}. Default value is `false`
         #
         # @param [String] tag A tag used for statistics collection about
-        #   transaction. `transaction_tag` must be a valid identifier of
+        #   transaction. A tag must be a valid identifier of
         #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
@@ -1399,7 +1399,7 @@ module Google
         def commit commit_options: nil, tag: nil, call_options: nil, &block
           raise ArgumentError, "Must provide a block" unless block_given?
 
-          request_options = build_request_options transaction_tag: tag
+          request_options = Convert.to_request_options transaction_tag: tag
           @pool.with_session do |session|
             session.commit(
               commit_options: commit_options, request_options: request_options,
@@ -1436,7 +1436,7 @@ module Google
         #     {CommitResponse}. Default value is `false`
         #
         # @param [String] tag A tag used for statistics collection about
-        #   transaction. The value of transaction_tag should be the same
+        #   transaction. The value of transaction tag should be the same
         #   for all requests belonging to the same transaction. A tag must be
         #   a valid identifier of the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
         # @param [Hash] call_options A hash of values to specify the custom
@@ -1549,7 +1549,7 @@ module Google
           deadline = validate_deadline deadline
           backoff = 1.0
           start_time = current_time
-          request_options = build_request_options transaction_tag: tag
+          request_options = Convert.to_request_options transaction_tag: tag
 
           @pool.with_transaction do |tx|
             tx.transaction_tag = tag if tag
@@ -2009,16 +2009,6 @@ module Google
         rescue StandardError
           # Any error indicates the backoff should be handled elsewhere
           nil
-        end
-
-        ## Build request options.
-        def build_request_options request_tag: nil, transaction_tag: nil
-          return unless request_tag || transaction_tag
-
-          options = {}
-          options[:request_tag] = request_tag if request_tag
-          options[:transaction_tag] = transaction_tag if transaction_tag
-          options
         end
       end
     end

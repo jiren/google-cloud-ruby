@@ -324,6 +324,11 @@ module Google
 
             [input_params, input_param_types]
           end
+
+          def to_request_options options
+            req_opts = options.compact
+            req_opts unless req_opts.empty?
+          end
         end
 
         # rubocop:enable all
