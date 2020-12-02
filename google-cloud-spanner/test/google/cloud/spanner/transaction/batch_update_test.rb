@@ -173,7 +173,8 @@ describe Google::Cloud::Spanner::Transaction, :batch_update, :mock_spanner do
     }, default_options]
     session.service.mocked_service = mock
 
-    row_counts = transaction.batch_update tag: 'Tag-1-1' do |b|
+    request_options = { request_tag: "Tag-1-1" }
+    row_counts = transaction.batch_update request_options: request_options do |b|
       b.batch_update "UPDATE users SET active = true"
     end
 

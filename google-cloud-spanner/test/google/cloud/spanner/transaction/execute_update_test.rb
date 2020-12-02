@@ -264,7 +264,8 @@ describe Google::Cloud::Spanner::Transaction, :execute_update, :mock_spanner do
                                  request_options: { transaction_tag: "Tag-2", request_tag: "Tag-2-1" },
                                  options: default_options
 
-    row_count = transaction.execute_update "UPDATE users SET active = true", tag: "Tag-2-1"
+    row_count = transaction.execute_update "UPDATE users SET active = true",
+                                            request_options: { transaction_tag: "Tag-2", request_tag: "Tag-2-1" }
 
     mock.verify
 

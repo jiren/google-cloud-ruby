@@ -568,7 +568,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
 
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users",
                                  transaction: tx_selector, seqno: 1,
-                                 request_options: { transaction_tag: 'Tag-1', request_tag: 'Tag-1-1'},
+                                 request_options: { transaction_tag: "Tag-1", request_tag: "Tag-1-1" },
                                  options: default_options
     expect_execute_streaming_sql update_results_enum, session_grpc.name,
                                  "UPDATE users SET active = true", transaction: tx_selector,
@@ -577,7 +577,7 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
 
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: transaction_id,
-      single_use_transaction: nil, request_options: { transaction_tag: 'Tag-1' }
+      single_use_transaction: nil, request_options: { transaction_tag: "Tag-1" }
     }, default_options]
 
     # transaction checkin
@@ -585,11 +585,11 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, options: tx_opts, request_options: nil
     }, default_options]
 
-    client.transaction tag: 'Tag-1' do |tx|
+    client.transaction transaction_tag: "Tag-1" do |tx|
       _(tx).must_be_kind_of Google::Cloud::Spanner::Transaction
 
-      tx.execute_query "SELECT * FROM users", tag: 'Tag-1-1'
-      tx.execute_update "UPDATE users SET active = true", tag: "Tag-1-2"
+      tx.execute_query "SELECT * FROM users", request_options: { request_tag: "Tag-1-1" }
+      tx.execute_update "UPDATE users SET active = true", request_options: { request_tag: "Tag-1-2" }
       tx.update "users", [{ id: 1, name: "Charlie", active: false }]
     end
 

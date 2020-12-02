@@ -236,11 +236,12 @@ describe Google::Cloud::Spanner::Transaction, :read, :mock_spanner do
       columns: ["id", "name", "active", "age", "score", "updated_at", "birthday", "avatar", "project_ids"],
       key_set: Google::Cloud::Spanner::V1::KeySet.new(all: true),
       transaction: tx_selector, index: nil, limit: nil, resume_token: nil, partition_token: nil,
-      request_options: { transaction_tag: 'Tag-1', request_tag: 'Tag-1-1' }
+      request_options: { transaction_tag: "Tag-1", request_tag: "Tag-1-1" }
     }, default_options]
     session.service.mocked_service = mock
 
-    results = transaction.read "my-table", columns, tag: 'Tag-1-1'
+    results = transaction.read "my-table", columns,
+                               request_options: { transaction_tag: "Tag-1", request_tag: "Tag-1-1" }
 
     mock.verify
 

@@ -319,14 +319,13 @@ module Google
         #   end
         #
         def execute_query sql, params: nil, types: nil, query_options: nil,
-                          tag: nil, call_options: nil
+                          request_options: nil, call_options: nil
           ensure_session!
 
           @seqno += 1
 
           params, types = Convert.to_input_params_and_types params, types
-          request_options = Convert.to_request_options \
-            request_tag: tag, transaction_tag: transaction_tag
+          request_options = build_request_options request_options
           session.execute_query sql, params: params, types: types,
                                      transaction: tx_selector, seqno: @seqno,
                                      query_options: query_options,
@@ -482,10 +481,11 @@ module Google
         #   end
         #
         def execute_update sql, params: nil, types: nil, query_options: nil,
-                           tag: nil, call_options: nil
+                           request_options: nil, call_options: nil
           results = execute_query sql, params: params, types: types,
                                   query_options: query_options,
-                                  tag: tag, call_options: call_options
+                                  request_options: request_options,
+                                  call_options: call_options
           # Stream all PartialResultSet to get ResultSetStats
           results.rows.to_a
           # Raise an error if there is not a row count returned
@@ -572,11 +572,11 @@ module Google
         #     end
         #   end
         #
-        def batch_update tag: nil, call_options: nil, &block
+        def batch_update request_options: nil, call_options: nil, &block
           ensure_session!
           @seqno += 1
-          request_options = Convert.to_request_options \
-            request_tag: tag, transaction_tag: transaction_tag
+
+          request_options = build_request_options request_options
           session.batch_update tx_selector, @seqno,
                                request_options: request_options,
                                call_options: call_options, &block
@@ -634,13 +634,12 @@ module Google
         #   end
         #
         def read table, columns, keys: nil, index: nil, limit: nil,
-                 tag: nil, call_options: nil
+                 request_options: nil, call_options: nil
           ensure_session!
 
           columns = Array(columns).map(&:to_s)
           keys = Convert.to_key_set keys
-          request_options = Convert.to_request_options request_tag: tag,
-                                                       transaction_tag: transaction_tag
+          request_options = build_request_options request_options
           session.read table, columns, keys: keys, index: index, limit: limit,
                                        transaction: tx_selector,
                                        request_options: request_options,

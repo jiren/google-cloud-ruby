@@ -309,7 +309,7 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
      }, default_options]
     spanner.service.mocked_service = mock
 
-    results = client.read "my-table", [:id], tag: 'Tag-1'
+    results = client.read "my-table", [:id], request_options: { request_tag: 'Tag-1'}
 
     shutdown_client! client
 

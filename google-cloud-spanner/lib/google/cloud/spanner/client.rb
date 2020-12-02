@@ -390,15 +390,13 @@ module Google
         #   end
         #
         def execute_query sql, params: nil, types: nil, single_use: nil,
-                          query_options: nil, tag: nil,
+                          query_options: nil, request_options: nil,
                           call_options: nil
           validate_single_use_args! single_use
           ensure_service!
 
           params, types = Convert.to_input_params_and_types params, types
           single_use_tx = single_use_transaction single_use
-          request_options = Convert.to_request_options request_tag: tag
-
           results = nil
           @pool.with_session do |session|
             results = session.execute_query \
@@ -633,12 +631,11 @@ module Google
         #     "UPDATE users SET friends = NULL WHERE active = false", tag: "Tag-1"
         #
         def execute_partition_update sql, params: nil, types: nil,
-                                     query_options: nil, tag: nil,
+                                     query_options: nil, request_options: nil,
                                      call_options: nil
           ensure_service!
 
           params, types = Convert.to_input_params_and_types params, types
-          request_options = Convert.to_request_options request_tag: tag
           results = nil
           @pool.with_session do |session|
             results = session.execute_query \
@@ -809,15 +806,13 @@ module Google
         #   end
         #
         def read table, columns, keys: nil, index: nil, limit: nil,
-                 single_use: nil, tag: nil, call_options: nil
+                 single_use: nil, request_options: nil, call_options: nil
           validate_single_use_args! single_use
           ensure_service!
 
           columns = Array(columns).map(&:to_s)
           keys = Convert.to_key_set keys
           single_use_tx = single_use_transaction single_use
-          request_options = Convert.to_request_options request_tag: tag
-
           results = nil
           @pool.with_session do |session|
             results = session.read \
@@ -919,8 +914,7 @@ module Google
         #                       { id: 2, name: "Harvey",  active: true }],
         #                       request_options: request_options
         #
-        def upsert table, rows, commit_options: nil, tag: nil
-          request_options = Convert.to_request_options transaction_tag: tag
+        def upsert table, rows, commit_options: nil, request_options: nil
           @pool.with_session do |session|
             session.upsert table, rows, commit_options: commit_options,
                            request_options: request_options
@@ -1017,8 +1011,7 @@ module Google
         #                       { id: 2, name: "Harvey",  active: true }],
         #                       request_options: request_options
         #
-        def insert table, rows, commit_options: nil, tag: nil
-          request_options = Convert.to_request_options transaction_tag: tag
+        def insert table, rows, commit_options: nil, request_options: nil
           @pool.with_session do |session|
             session.insert table, rows, commit_options: commit_options,
                            request_options: request_options
@@ -1113,8 +1106,7 @@ module Google
         #                       { id: 2, name: "Harvey",  active: true }],
         #                      request_options: request_options
         #
-        def update table, rows, commit_options: nil, tag: nil
-          request_options = Convert.to_request_options transaction_tag: tag
+        def update table, rows, commit_options: nil, request_options: nil
           @pool.with_session do |session|
             session.update table, rows, commit_options: commit_options,
                            request_options: request_options
@@ -1211,8 +1203,7 @@ module Google
         #                        { id: 2, name: "Harvey",  active: true }],
         #                       request_options: request_options
         #
-        def replace table, rows, commit_options: nil, tag: nil
-          request_options = Convert.to_request_options transaction_tag: tag
+        def replace table, rows, commit_options: nil, request_options: nil
           @pool.with_session do |session|
             session.replace table, rows, commit_options: commit_options,
                             request_options: request_options
@@ -1299,9 +1290,8 @@ module Google
         #   request_options = { tag: "BulkDelete-Users" }
         #   db.delete "users", [1, 2, 3], request_options: request_options
         #
-        def delete table, keys = [], commit_options: nil, tag: nil,
+        def delete table, keys = [], commit_options: nil, request_options: nil,
                    call_options: nil
-          request_options = Convert.to_request_options transaction_tag: tag
           @pool.with_session do |session|
             session.delete table, keys, commit_options: commit_options,
                            request_options: request_options,
@@ -1396,10 +1386,10 @@ module Google
         #     c.insert "users", [{ id: 2, name: "Harvey",  active: true }]
         #   end
         #
-        def commit commit_options: nil, tag: nil, call_options: nil, &block
+        def commit commit_options: nil, request_options: nil,
+                   call_options: nil, &block
           raise ArgumentError, "Must provide a block" unless block_given?
 
-          request_options = Convert.to_request_options transaction_tag: tag
           @pool.with_session do |session|
             session.commit(
               commit_options: commit_options, request_options: request_options,
@@ -1539,8 +1529,8 @@ module Google
         #     tx.insert "users", [{ id: 2, name: "Harvey",  active: true }]
         #   end
         #
-        def transaction deadline: 120, commit_options: nil, tag: nil,
-                        call_options: nil
+        def transaction deadline: 120, commit_options: nil,
+                        transaction_tag: nil, call_options: nil
           ensure_service!
           unless Thread.current[:transaction_id].nil?
             raise "Nested transactions are not allowed"
@@ -1549,10 +1539,13 @@ module Google
           deadline = validate_deadline deadline
           backoff = 1.0
           start_time = current_time
-          request_options = Convert.to_request_options transaction_tag: tag
+
+          if transaction_tag
+            request_options = { transaction_tag: transaction_tag }
+          end
 
           @pool.with_transaction do |tx|
-            tx.transaction_tag = tag if tag
+            tx.transaction_tag = transaction_tag
             Thread.current[:transaction_id] = tx.transaction_id
             yield tx
             commit_resp = @project.service.commit \

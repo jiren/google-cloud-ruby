@@ -395,7 +395,7 @@ describe Google::Cloud::Spanner::Client, :execute_query, :mock_spanner do
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users",
                                  request_options: { request_tag: 'Tag-1' }, options: default_options
 
-    results = client.execute_query "SELECT * FROM users", tag: 'Tag-1'
+    results = client.execute_query "SELECT * FROM users", request_options: { request_tag: 'Tag-1' }
 
     shutdown_client! client
 

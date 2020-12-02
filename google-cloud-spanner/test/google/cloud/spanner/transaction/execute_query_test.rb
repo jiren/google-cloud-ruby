@@ -296,7 +296,8 @@ describe Google::Cloud::Spanner::Transaction, :execute_query, :mock_spanner do
                                  request_options: { transaction_tag: "Tag-1", request_tag: "Tag-1-1"},
                                  options: default_options
 
-    transaction.execute_query "SELECT * FROM users", tag: "Tag-1-1"
+    transaction.execute_query "SELECT * FROM users",
+                              request_options: { transaction_tag: "Tag-1", request_tag: "Tag-1-1"}
     mock.verify
   end
 

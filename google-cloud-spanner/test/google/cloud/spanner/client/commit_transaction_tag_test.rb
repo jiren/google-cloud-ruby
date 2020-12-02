@@ -40,11 +40,11 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
     mock.expect :create_session, session_grpc, [{database: database_path(instance_id, database_id), session: nil}, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
-      single_use_transaction: tx_opts, request_options: { transaction_tag: 'Tag-1'}
+      single_use_transaction: tx_opts, request_options: { transaction_tag: "Tag-1"}
     }, default_options]
     spanner.service.mocked_service = mock
 
-    timestamp = client.commit tag: 'Tag-1' do |c|
+    timestamp = client.commit request_options: { transaction_tag: "Tag-1"} do |c|
       c.insert "users", [{ id: 1, name: "Charlie", active: false }]
     end
     _(timestamp).must_equal commit_time
@@ -68,11 +68,12 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
     mock.expect :create_session, session_grpc, [{database: database_path(instance_id, database_id), session: nil}, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
-      single_use_transaction: tx_opts, request_options: { transaction_tag: 'Tag-2' }
+      single_use_transaction: tx_opts, request_options: { transaction_tag: "Tag-2" }
     }, default_options]
     spanner.service.mocked_service = mock
 
-    timestamp = client.update "users", [{ id: 1, name: "Charlie", active: false }], tag: 'Tag-2'
+    timestamp = client.update "users", [{ id: 1, name: "Charlie", active: false }],
+                              request_options: { transaction_tag: "Tag-2" }
     _(timestamp).must_equal commit_time
 
     shutdown_client! client
@@ -94,11 +95,12 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
     mock.expect :create_session, session_grpc, [{database: database_path(instance_id, database_id), session: nil}, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
-      single_use_transaction: tx_opts, request_options: { transaction_tag: 'Tag-3' }
+      single_use_transaction: tx_opts, request_options: { transaction_tag: "Tag-3" }
     }, default_options]
     spanner.service.mocked_service = mock
 
-    timestamp = client.insert "users", [{ id: 2, name: "Harvey",  active: true }], tag: 'Tag-3'
+    timestamp = client.insert "users", [{ id: 2, name: "Harvey",  active: true }],
+                              request_options: { transaction_tag: "Tag-3" }
     _(timestamp).must_equal commit_time
 
     shutdown_client! client
@@ -120,11 +122,12 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
     mock.expect :create_session, session_grpc, [{database: database_path(instance_id, database_id), session: nil}, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
-      single_use_transaction: tx_opts, request_options: { transaction_tag: 'Tag-4' }
+      single_use_transaction: tx_opts, request_options: { transaction_tag: "Tag-4" }
     }, default_options]
     spanner.service.mocked_service = mock
 
-    timestamp = client.upsert "users", [{ id: 3, name: "Marley",  active: false }], tag: 'Tag-4'
+    timestamp = client.upsert "users", [{ id: 3, name: "Marley",  active: false }],
+                              request_options: { transaction_tag: "Tag-4" }
     _(timestamp).must_equal commit_time
 
     shutdown_client! client
@@ -149,11 +152,11 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
     mock.expect :create_session, session_grpc, [{database: database_path(instance_id, database_id), session: nil}, default_options]
     mock.expect :commit, commit_resp, [{
       session: session_grpc.name, mutations: mutations, transaction_id: nil,
-      single_use_transaction: tx_opts, request_options: { transaction_tag: 'Tag-5' }
+      single_use_transaction: tx_opts, request_options: { transaction_tag: "Tag-5" }
     }, default_options]
     spanner.service.mocked_service = mock
 
-    timestamp = client.delete "users", [1, 2], tag: 'Tag-5'
+    timestamp = client.delete "users", [1, 2], request_options: { transaction_tag: "Tag-5" }
     _(timestamp).must_equal commit_time
 
     shutdown_client! client

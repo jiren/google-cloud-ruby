@@ -328,7 +328,7 @@ describe Google::Cloud::Spanner::Client, :execute_partition_update, :mock_spanne
                                  transaction: tx_selector, request_options: { request_tag: 'Tag-2' },
                                  options: default_options
 
-    row_count = client.execute_partition_update "UPDATE users SET active = true", tag: 'Tag-2'
+    row_count = client.execute_partition_update "UPDATE users SET active = true", request_options: { request_tag: 'Tag-2' }
 
     mock.verify
 
