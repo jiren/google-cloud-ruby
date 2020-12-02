@@ -158,10 +158,12 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
-        # @param [String] tag A per-request tag which can be applied to queries
-        #   or reads, used for statistics collection. Tag must be a valid
-        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
-        #   characters in length.
+        # @param [String] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   queries or reads, used for statistics collection. Tag must be a
+        #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
+        #   and 64 characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -400,10 +402,12 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
-        # @param [String] tag A per-request tag which can be applied to queries
-        #   or reads, used for statistics collection. Tag must be a valid
-        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
-        #   characters in length.
+        # @param [String] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   queries or reads, used for statistics collection. Tag must be a
+        #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
+        #   and 64 characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -499,10 +503,12 @@ module Google
         ##
         # Executes DML statements in a batch.
         #
-        # @param [String] tag A per-request tag which can be applied to queries
-        #   or reads, used for statistics collection. Tag must be a valid
-        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
-        #   characters in length.
+        # @param [String] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   queries or reads, used for statistics collection. Tag must be a
+        #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
+        #   and 64 characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -598,10 +604,12 @@ module Google
         #   Optional.
         # @param [Integer] limit If greater than zero, no more than this number
         #   of rows will be returned. The default is no limit.
-        # @param [String] tag A per-request tag which can be applied to queries
-        #   or reads, used for statistics collection. Tag must be a valid
-        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
-        #   characters in length.
+        # @param [String] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   queries or reads, used for statistics collection. Tag must be a
+        #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
+        #   and 64 characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -1066,6 +1074,18 @@ module Google
         def tx_selector
           return nil if transaction_id.nil?
           V1::TransactionSelector.new id: transaction_id
+        end
+
+        ##
+        # @private Build request options. If transaction tag is set
+        #   then add into request options.
+        def build_request_options options
+          if transaction_tag
+            options ||= {}
+            options[:transaction_tag] = transaction_tag
+          end
+
+          options
         end
 
         ##

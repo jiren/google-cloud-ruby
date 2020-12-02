@@ -223,10 +223,12 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
-        # @param [String] tag A per-request tag which can be applied to queries
-        #   or reads, used for statistics collection. Tag must be a valid
-        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
-        #   characters in length.
+        # @param [String] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   queries or reads, used for statistics collection. Tag must be a
+        #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
+        #   and 64 characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -383,7 +385,9 @@ module Google
         #
         #   db = spanner.client "my-instance", "my-database"
         #
-        #   results = db.execute_query "SELECT * FROM users", tag: "Tag-1"
+        #   request_options = { request_tag: "Read-Users" }
+        #   results = db.execute_query "SELECT * FROM users",
+        #                              request_options: request_options
         #
         #   results.rows.each do |row|
         #     puts "User #{row[:id]} is #{row[:name]}"
@@ -553,10 +557,12 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
-        # @param [String] tag A per-request tag which can be applied to queries
-        #   or reads, used for statistics collection. Tag must be a valid
-        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
-        #   characters in length.
+        # @param [String] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   queries or reads, used for statistics collection. Tag must be a
+        #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
+        #   and 64 characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -627,8 +633,10 @@ module Google
         #   spanner = Google::Cloud::Spanner.new
         #   db = spanner.client "my-instance", "my-database"
         #
+        #   request_options = { request_tag: "Update-Users" }
         #   row_count = db.execute_partition_update \
-        #     "UPDATE users SET friends = NULL WHERE active = false", tag: "Tag-1"
+        #     "UPDATE users SET friends = NULL WHERE active = false",
+        #     request_options: request_options
         #
         def execute_partition_update sql, params: nil, types: nil,
                                      query_options: nil, request_options: nil,
@@ -723,10 +731,12 @@ module Google
         #       Useful for reading the freshest data available at a nearby
         #       replica, while bounding the possible staleness if the local
         #       replica has fallen behind.
-        # @param [String] tag A per-request tag which can be applied to queries
-        #   or reads, used for statistics collection. Tag must be a valid
-        #   identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2 and 64
-        #   characters in length.
+        # @param [String] request_options Common request options.
+        #
+        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   queries or reads, used for statistics collection. Tag must be a
+        #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
+        #   and 64 characters in length.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -799,7 +809,9 @@ module Google
         #
         #   db = spanner.client "my-instance", "my-database"
         #
-        #   results = db.read "users", [:id, :name], tag: "Tag-1"
+        #   request_options = { request_tag: "Read-Users-All" }
+        #   results = db.read "users", [:id, :name],
+        #                     request_options: request_options
         #
         #   results.rows.each do |row|
         #     puts "User #{row[:id]} is #{row[:name]}"
@@ -861,9 +873,7 @@ module Google
         #
         #   See [Data
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
-        # @param [String] tag A tag used for statistics collection about
-        #   transaction. A tag must be a valid identifier of
-        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
+        # @param [String] request_options Common request options.
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -872,6 +882,12 @@ module Google
         #   * `:return_commit_stats` (Boolean) A boolean value. If `true`,
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`
+        #
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:tag` (String) A tag used for statistics collection
+        #   about transaction. A tag must be a valid identifier of the format:
+        #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`.
         #
         # @return [Time, CommitResponse] The timestamp at which the operation
         #   committed. If commit options are set it returns {CommitResponse}.
@@ -958,9 +974,11 @@ module Google
         #
         #   See [Data
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
-        # @param [String] tag A tag used for statistics collection about
-        #   transaction. A tag must be a valid identifier of
-        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #   about transaction. A tag must be a valid identifier of the format:
+        #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`.
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -1054,9 +1072,11 @@ module Google
         #
         #   See [Data
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
-        # @param [String] tag A tag used for statistics collection about
-        #   transaction. A tag must be a valid identifier of
-        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #   about transaction. A tag must be a valid identifier of the format:
+        #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`.
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -1151,9 +1171,11 @@ module Google
         #
         #   See [Data
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
-        # @param [String] tag A tag used for statistics collection about
-        #   transaction. A tag must be a valid identifier of
-        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #   about transaction. A tag must be a valid identifier of the format:
+        #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`.
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -1238,9 +1260,11 @@ module Google
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`
         #
-        # @param [String] tag A tag used for statistics collection about
-        #   transaction. A tag must be a valid identifier of
-        #   the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #   about transaction. A tag must be a valid identifier of the format:
+        #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -1322,9 +1346,11 @@ module Google
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`
         #
-        # @param [String] tag A tag used for statistics collection about
-        #   transaction. A tag must be a valid identifier of the format:
-        #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #   about transaction. A tag must be a valid identifier of the format:
+        #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`.
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -1425,10 +1451,13 @@ module Google
         #     then statistics related to the transaction will be included in
         #     {CommitResponse}. Default value is `false`
         #
-        # @param [String] tag A tag used for statistics collection about
-        #   transaction. The value of a transaction tag should be the same
-        #   for all requests belonging to the same transaction. A tag must be
-        #   a valid identifier of the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
+        # @param [Hash] request_options Common request options.
+        #
+        #   * `:tag` (String)A tag used for statistics collection
+        #   about transaction. The value of a transaction tag should be the
+        #   same for all requests belonging to the same transaction. A tag must
+        #   be a valid identifier of the format: `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`
+        #
         # @param [Hash] call_options A hash of values to specify the custom
         #   call options, e.g., timeout, retries, etc. Call options are
         #   optional. The following settings can be provided:
@@ -1530,7 +1559,7 @@ module Google
         #   end
         #
         def transaction deadline: 120, commit_options: nil,
-                        transaction_tag: nil, call_options: nil
+                        request_options: nil: nil, call_options: nil
           ensure_service!
           unless Thread.current[:transaction_id].nil?
             raise "Nested transactions are not allowed"
@@ -1540,22 +1569,24 @@ module Google
           backoff = 1.0
           start_time = current_time
 
-          if transaction_tag
-            request_options = { transaction_tag: transaction_tag }
-          end
+          request_options = Convert.to_request_options \
+            request_options, tag_type: :transaction_tag
 
           @pool.with_transaction do |tx|
-            tx.transaction_tag = transaction_tag
-            Thread.current[:transaction_id] = tx.transaction_id
-            yield tx
-            commit_resp = @project.service.commit \
-              tx.session.path, tx.mutations,
-              transaction_id: tx.transaction_id,
-              commit_options: commit_options,
-              request_options: request_options,
-              call_options: call_options
-            resp = CommitResponse.from_grpc commit_resp
-            commit_options ? resp : resp.timestamp
+            if request_options
+              tx.transaction_tag = request_options[:transaction_tag]
+            end
+            begin
+              Thread.current[:transaction_id] = tx.transaction_id
+              yield tx
+              commit_resp = @project.service.commit \
+                tx.session.path, tx.mutations,
+                transaction_id: tx.transaction_id,
+                commit_options: commit_options,
+                request_options: request_options,
+                call_options: call_options
+              resp = CommitResponse.from_grpc commit_resp
+              commit_options ? resp : resp.timestamp
           rescue GRPC::Aborted, Google::Cloud::AbortedError => e
             # Re-raise if deadline has passed
             if current_time - start_time > deadline
