@@ -53,7 +53,8 @@ describe "Spanner Client", :pdml, :spanner do
   end
 
   it "executes a Partitioned DML statement with request tagging option" do
-    pdml_row_count = db.execute_partition_update "UPDATE accounts a SET a.active = TRUE WHERE a.active = FALSE", tag: "Tag-P-1"
+    pdml_row_count = db.execute_partition_update "UPDATE accounts a SET a.active = TRUE WHERE a.active = FALSE",
+                                                 request_options: { request_tag: "Tag-P-1" }
     _(pdml_row_count).must_equal 1
   end
 end
