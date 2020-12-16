@@ -225,7 +225,7 @@ module Google
         #     available optimizer version.
         # @param [String] request_options Common request options.
         #
-        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
         #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
         #   and 64 characters in length.
@@ -385,7 +385,7 @@ module Google
         #
         #   db = spanner.client "my-instance", "my-database"
         #
-        #   request_options = { request_tag: "Read-Users" }
+        #   request_options = { tag: "Read-Users" }
         #   results = db.execute_query "SELECT * FROM users",
         #                              request_options: request_options
         #
@@ -400,6 +400,8 @@ module Google
           ensure_service!
 
           params, types = Convert.to_input_params_and_types params, types
+          request_options = Convert.to_request_options request_options,
+                                                       tag_type: :request_tag
           single_use_tx = single_use_transaction single_use
           results = nil
           @pool.with_session do |session|
@@ -559,7 +561,7 @@ module Google
         #     available optimizer version.
         # @param [String] request_options Common request options.
         #
-        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
         #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
         #   and 64 characters in length.
@@ -633,7 +635,7 @@ module Google
         #   spanner = Google::Cloud::Spanner.new
         #   db = spanner.client "my-instance", "my-database"
         #
-        #   request_options = { request_tag: "Update-Users" }
+        #   request_options = { tag: "Update-Users" }
         #   row_count = db.execute_partition_update \
         #     "UPDATE users SET friends = NULL WHERE active = false",
         #     request_options: request_options
@@ -644,6 +646,9 @@ module Google
           ensure_service!
 
           params, types = Convert.to_input_params_and_types params, types
+          request_options = Convert.to_request_options request_options,
+                                                       tag_type: :request_tag
+
           results = nil
           @pool.with_session do |session|
             results = session.execute_query \
@@ -733,7 +738,7 @@ module Google
         #       replica has fallen behind.
         # @param [String] request_options Common request options.
         #
-        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
         #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
         #   and 64 characters in length.
@@ -809,7 +814,7 @@ module Google
         #
         #   db = spanner.client "my-instance", "my-database"
         #
-        #   request_options = { request_tag: "Read-Users-All" }
+        #   request_options = { tag: "Read-Users-All" }
         #   results = db.read "users", [:id, :name],
         #                     request_options: request_options
         #
@@ -825,6 +830,9 @@ module Google
           columns = Array(columns).map(&:to_s)
           keys = Convert.to_key_set keys
           single_use_tx = single_use_transaction single_use
+          request_options = Convert.to_request_options request_options,
+                                                       tag_type: :request_tag
+
           results = nil
           @pool.with_session do |session|
             results = session.read \
@@ -931,6 +939,9 @@ module Google
         #                       request_options: request_options
         #
         def upsert table, rows, commit_options: nil, request_options: nil
+          request_options = Convert.to_request_options \
+            request_options, tag_type: :transaction_tag
+
           @pool.with_session do |session|
             session.upsert table, rows, commit_options: commit_options,
                            request_options: request_options
@@ -976,7 +987,7 @@ module Google
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
         # @param [Hash] request_options Common request options.
         #
-        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #   * `:tag` (String) A tag used for statistics collection
         #   about transaction. A tag must be a valid identifier of the format:
         #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`.
         #
@@ -1030,6 +1041,9 @@ module Google
         #                       request_options: request_options
         #
         def insert table, rows, commit_options: nil, request_options: nil
+          request_options = Convert.to_request_options \
+            request_options, tag_type: :transaction_tag
+
           @pool.with_session do |session|
             session.insert table, rows, commit_options: commit_options,
                            request_options: request_options
@@ -1074,7 +1088,7 @@ module Google
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
         # @param [Hash] request_options Common request options.
         #
-        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #   * `:tag` (String) A tag used for statistics collection
         #   about transaction. A tag must be a valid identifier of the format:
         #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`.
         #
@@ -1127,6 +1141,9 @@ module Google
         #                      request_options: request_options
         #
         def update table, rows, commit_options: nil, request_options: nil
+          request_options = Convert.to_request_options \
+            request_options, tag_type: :transaction_tag
+
           @pool.with_session do |session|
             session.update table, rows, commit_options: commit_options,
                            request_options: request_options
@@ -1173,7 +1190,7 @@ module Google
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
         # @param [Hash] request_options Common request options.
         #
-        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #   * `:tag` (String) A tag used for statistics collection
         #   about transaction. A tag must be a valid identifier of the format:
         #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`.
         #
@@ -1226,6 +1243,9 @@ module Google
         #                       request_options: request_options
         #
         def replace table, rows, commit_options: nil, request_options: nil
+          request_options = Convert.to_request_options \
+            request_options, tag_type: :transaction_tag
+
           @pool.with_session do |session|
             session.replace table, rows, commit_options: commit_options,
                             request_options: request_options
@@ -1262,7 +1282,7 @@ module Google
         #
         # @param [Hash] request_options Common request options.
         #
-        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #   * `:tag` (String) A tag used for statistics collection
         #   about transaction. A tag must be a valid identifier of the format:
         #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`.
         # @param [Hash] call_options A hash of values to specify the custom
@@ -1316,6 +1336,9 @@ module Google
         #
         def delete table, keys = [], commit_options: nil, request_options: nil,
                    call_options: nil
+          request_options = Convert.to_request_options \
+            request_options, tag_type: :transaction_tag
+
           @pool.with_session do |session|
             session.delete table, keys, commit_options: commit_options,
                            request_options: request_options,
@@ -1348,7 +1371,7 @@ module Google
         #
         # @param [Hash] request_options Common request options.
         #
-        #   * `:transaction_tag` (String) A tag used for statistics collection
+        #   * `:tag` (String) A tag used for statistics collection
         #   about transaction. A tag must be a valid identifier of the format:
         #   `[a-zA-Z][a-zA-Z0-9_\-]{0,49}`.
         # @param [Hash] call_options A hash of values to specify the custom
@@ -1415,6 +1438,9 @@ module Google
         def commit commit_options: nil, request_options: nil,
                    call_options: nil, &block
           raise ArgumentError, "Must provide a block" unless block_given?
+
+          request_options = Convert.to_request_options \
+            request_options, tag_type: :transaction_tag
 
           @pool.with_session do |session|
             session.commit(

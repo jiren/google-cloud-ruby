@@ -123,7 +123,7 @@ describe "Spanner Client", :read, :spanner do
   end
 
   it "reads with request tag option" do
-    request_options = { request_tag: "Tag-R-1" }
+    request_options = { tag: "Tag-R-1" }
     _(db.read(table_name, [:id], request_options: request_options).rows.map(&:to_h)).must_equal [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }, { id: 5 }, { id: 6 }, { id: 7 }, { id: 8 }, { id: 9 }, { id: 10 }, { id: 11 }, { id: 12 }]
   end
 end

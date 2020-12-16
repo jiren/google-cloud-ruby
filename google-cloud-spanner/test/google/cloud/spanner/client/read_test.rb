@@ -305,11 +305,11 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
       columns: ["id"],
       key_set: Google::Cloud::Spanner::V1::KeySet.new(all: true),
       transaction: nil, index: nil, limit: nil, resume_token: nil, partition_token: nil,
-      request_options: { request_tag: 'Tag-1'}
+      request_options: { request_tag: "Tag-1"}
      }, default_options]
     spanner.service.mocked_service = mock
 
-    results = client.read "my-table", [:id], request_options: { request_tag: 'Tag-1'}
+    results = client.read "my-table", [:id], request_options: { tag: "Tag-1" }
 
     shutdown_client! client
 

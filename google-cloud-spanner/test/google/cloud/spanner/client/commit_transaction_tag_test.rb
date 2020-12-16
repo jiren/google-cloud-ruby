@@ -44,7 +44,7 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
     }, default_options]
     spanner.service.mocked_service = mock
 
-    timestamp = client.commit request_options: { transaction_tag: "Tag-1"} do |c|
+    timestamp = client.commit request_options: { tag: "Tag-1"} do |c|
       c.insert "users", [{ id: 1, name: "Charlie", active: false }]
     end
     _(timestamp).must_equal commit_time
@@ -73,7 +73,7 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
     spanner.service.mocked_service = mock
 
     timestamp = client.update "users", [{ id: 1, name: "Charlie", active: false }],
-                              request_options: { transaction_tag: "Tag-2" }
+                              request_options: { tag: "Tag-2" }
     _(timestamp).must_equal commit_time
 
     shutdown_client! client
@@ -100,7 +100,7 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
     spanner.service.mocked_service = mock
 
     timestamp = client.insert "users", [{ id: 2, name: "Harvey",  active: true }],
-                              request_options: { transaction_tag: "Tag-3" }
+                              request_options: { tag: "Tag-3" }
     _(timestamp).must_equal commit_time
 
     shutdown_client! client
@@ -127,7 +127,7 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
     spanner.service.mocked_service = mock
 
     timestamp = client.upsert "users", [{ id: 3, name: "Marley",  active: false }],
-                              request_options: { transaction_tag: "Tag-4" }
+                              request_options: { tag: "Tag-4" }
     _(timestamp).must_equal commit_time
 
     shutdown_client! client
@@ -156,7 +156,7 @@ describe Google::Cloud::Spanner::Client, :read, :mock_spanner do
     }, default_options]
     spanner.service.mocked_service = mock
 
-    timestamp = client.delete "users", [1, 2], request_options: { transaction_tag: "Tag-5" }
+    timestamp = client.delete "users", [1, 2], request_options: { tag: "Tag-5" }
     _(timestamp).must_equal commit_time
 
     shutdown_client! client

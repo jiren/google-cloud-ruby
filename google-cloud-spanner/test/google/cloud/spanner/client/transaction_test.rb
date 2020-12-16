@@ -585,11 +585,11 @@ describe Google::Cloud::Spanner::Client, :transaction, :mock_spanner do
       session: session_grpc.name, options: tx_opts, request_options: nil
     }, default_options]
 
-    client.transaction transaction_tag: "Tag-1" do |tx|
+    client.transaction tag: "Tag-1" do |tx|
       _(tx).must_be_kind_of Google::Cloud::Spanner::Transaction
 
-      tx.execute_query "SELECT * FROM users", request_options: { request_tag: "Tag-1-1" }
-      tx.execute_update "UPDATE users SET active = true", request_options: { request_tag: "Tag-1-2" }
+      tx.execute_query "SELECT * FROM users", request_options: { tag: "Tag-1-1" }
+      tx.execute_update "UPDATE users SET active = true", request_options: { tag: "Tag-1-2" }
       tx.update "users", [{ id: 1, name: "Charlie", active: false }]
     end
 

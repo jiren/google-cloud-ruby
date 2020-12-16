@@ -241,7 +241,7 @@ describe Google::Cloud::Spanner::Transaction, :read, :mock_spanner do
     session.service.mocked_service = mock
 
     results = transaction.read "my-table", columns,
-                               request_options: { transaction_tag: "Tag-1", request_tag: "Tag-1-1" }
+                               request_options: { tag: "Tag-1-1" }
 
     mock.verify
 

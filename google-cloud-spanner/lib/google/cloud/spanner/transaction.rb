@@ -160,7 +160,7 @@ module Google
         #     available optimizer version.
         # @param [String] request_options Common request options.
         #
-        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
         #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
         #   and 64 characters in length.
@@ -404,7 +404,7 @@ module Google
         #     available optimizer version.
         # @param [String] request_options Common request options.
         #
-        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
         #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
         #   and 64 characters in length.
@@ -505,7 +505,7 @@ module Google
         #
         # @param [String] request_options Common request options.
         #
-        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
         #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
         #   and 64 characters in length.
@@ -606,7 +606,7 @@ module Google
         #   of rows will be returned. The default is no limit.
         # @param [String] request_options Common request options.
         #
-        #   * `:request_tag` (String) A per-request tag which can be applied to
+        #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
         #   valid identifier of the form: `[a-zA-Z][a-zA-Z0-9_\-]` between 2
         #   and 64 characters in length.
@@ -1080,6 +1080,8 @@ module Google
         # @private Build request options. If transaction tag is set
         #   then add into request options.
         def build_request_options options
+          options = Convert.to_request_options options, tag_type: :request_tag
+
           if transaction_tag
             options ||= {}
             options[:transaction_tag] = transaction_tag

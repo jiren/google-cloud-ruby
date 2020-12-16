@@ -393,9 +393,9 @@ describe Google::Cloud::Spanner::Client, :execute_query, :mock_spanner do
     mock.expect :create_session, session_grpc, [{ database: database_path(instance_id, database_id), session: nil }, default_options]
     spanner.service.mocked_service = mock
     expect_execute_streaming_sql results_enum, session_grpc.name, "SELECT * FROM users",
-                                 request_options: { request_tag: 'Tag-1' }, options: default_options
+                                 request_options: { request_tag: "Tag-1" }, options: default_options
 
-    results = client.execute_query "SELECT * FROM users", request_options: { request_tag: 'Tag-1' }
+    results = client.execute_query "SELECT * FROM users", request_options: { tag: "Tag-1" }
 
     shutdown_client! client
 
