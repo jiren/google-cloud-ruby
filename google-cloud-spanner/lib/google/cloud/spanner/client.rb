@@ -223,7 +223,7 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
-        # @param [String] request_options Common request options.
+        # @param [Hash] request_options Common request options.
         #
         #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
@@ -559,7 +559,7 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
-        # @param [String] request_options Common request options.
+        # @param [Hash] request_options Common request options.
         #
         #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
@@ -736,7 +736,7 @@ module Google
         #       Useful for reading the freshest data available at a nearby
         #       replica, while bounding the possible staleness if the local
         #       replica has fallen behind.
-        # @param [String] request_options Common request options.
+        # @param [Hash] request_options Common request options.
         #
         #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
@@ -881,7 +881,7 @@ module Google
         #
         #   See [Data
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
-        # @param [String] request_options Common request options.
+        # @param [Hash] request_options Common request options.
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -1585,7 +1585,7 @@ module Google
         #   end
         #
         def transaction deadline: 120, commit_options: nil,
-                        request_options: nil: nil, call_options: nil
+                        request_options: nil, call_options: nil
           ensure_service!
           unless Thread.current[:transaction_id].nil?
             raise "Nested transactions are not allowed"
@@ -1602,6 +1602,7 @@ module Google
             if request_options
               tx.transaction_tag = request_options[:transaction_tag]
             end
+
             begin
               Thread.current[:transaction_id] = tx.transaction_id
               yield tx

@@ -190,7 +190,7 @@ describe "Spanner Client", :transaction, :spanner do
   end
 
   it "execute transaction with tagging options" do
-    timestamp = db.transaction tag: "Tag-1" do |tx|
+    timestamp = db.transaction request_options: { tag: "Tag-1" } do |tx|
       tx.execute_query "SELECT * from accounts", request_options: { tag: "Tag-1-1" }
       tx.batch_update request_options: { tag: "Tag-1-2" } do |b|
         b.batch_update(

@@ -158,7 +158,7 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
-        # @param [String] request_options Common request options.
+        # @param [Hash] request_options Common request options.
         #
         #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
@@ -402,7 +402,7 @@ module Google
         #   * `:optimizer_version` (String) The version of optimizer to use.
         #     Empty to use database default. "latest" to use the latest
         #     available optimizer version.
-        # @param [String] request_options Common request options.
+        # @param [Hash] request_options Common request options.
         #
         #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
@@ -503,7 +503,7 @@ module Google
         ##
         # Executes DML statements in a batch.
         #
-        # @param [String] request_options Common request options.
+        # @param [Hash] request_options Common request options.
         #
         #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
@@ -604,7 +604,7 @@ module Google
         #   Optional.
         # @param [Integer] limit If greater than zero, no more than this number
         #   of rows will be returned. The default is no limit.
-        # @param [String] request_options Common request options.
+        # @param [Hash] request_options Common request options.
         #
         #   * `:tag` (String) A per-request tag which can be applied to
         #   queries or reads, used for statistics collection. Tag must be a
