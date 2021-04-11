@@ -22,7 +22,7 @@ describe Google::Cloud::Spanner::Convert, :to_request_options, :mock_spanner do
   end
 
   it "returns same options if tag field not present" do
-    options = Google::Cloud::Spanner::Convert.to_request_options extra: "123"
+    options = Google::Cloud::Spanner::Convert.to_request_options({extra: "123"})
     _(options).must_equal({ extra: "123" })
   end
 

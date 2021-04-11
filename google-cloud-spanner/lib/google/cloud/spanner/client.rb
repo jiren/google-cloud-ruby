@@ -881,7 +881,6 @@ module Google
         #
         #   See [Data
         #   types](https://cloud.google.com/spanner/docs/data-definition-language#data_types).
-        # @param [Hash] request_options Common request options.
         #
         # @param [Hash] commit_options A hash of commit options.
         #   e.g., return_commit_stats. Commit options are optional.
@@ -1614,28 +1613,29 @@ module Google
                 call_options: call_options
               resp = CommitResponse.from_grpc commit_resp
               commit_options ? resp : resp.timestamp
-          rescue GRPC::Aborted, Google::Cloud::AbortedError => e
-            # Re-raise if deadline has passed
-            if current_time - start_time > deadline
-              if e.is_a? GRPC::BadStatus
-                e = Google::Cloud::Error.from_error e
+            rescue GRPC::Aborted, Google::Cloud::AbortedError => e
+              # Re-raise if deadline has passed
+              if current_time - start_time > deadline
+                if e.is_a? GRPC::BadStatus
+                  e = Google::Cloud::Error.from_error e
+                end
+                raise e
               end
+              # Sleep the amount from RetryDelay, or incremental backoff
+              sleep(delay_from_aborted(e) || backoff *= 1.3)
+              # Create new transaction on the session and retry the block
+              tx = tx.session.create_transaction
+              retry
+            rescue StandardError => e
+              # Rollback transaction when handling unexpected error
+              tx.session.rollback tx.transaction_id
+              # Return nil if raised with rollback.
+              return nil if e.is_a? Rollback
+              # Re-raise error.
               raise e
+            ensure
+              Thread.current[:transaction_id] = nil
             end
-            # Sleep the amount from RetryDelay, or incremental backoff
-            sleep(delay_from_aborted(e) || backoff *= 1.3)
-            # Create new transaction on the session and retry the block
-            tx = tx.session.create_transaction
-            retry
-          rescue StandardError => e
-            # Rollback transaction when handling unexpected error
-            tx.session.rollback tx.transaction_id
-            # Return nil if raised with rollback.
-            return nil if e.is_a? Rollback
-            # Re-raise error.
-            raise e
-          ensure
-            Thread.current[:transaction_id] = nil
           end
         end
 
